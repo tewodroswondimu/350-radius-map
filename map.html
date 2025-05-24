@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>350-Mile Radius Map</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map { height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // Set your desired coordinates (latitude, longitude)
+    const lat = 30.285146; // UT at Austin
+    const lon = -97.734025;
+
+    const map = L.map('map').setView([lat, lon], 6);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Add marker for the node
+    L.marker([lat, lon]).addTo(map)
+      .bindPopup('University of Texas at Austin')
+      .openPopup();
+
+    // Add 350-mile radius circle (converted to meters)
+    const radiusInMeters = 350 * 1609.34;
+    L.circle([lat, lon], {
+      color: 'blue',
+      fillColor: '#30f',
+      fillOpacity: 0.2,
+      radius: radiusInMeters
+    }).addTo(map);
+  </script>
+</body>
+</html>
