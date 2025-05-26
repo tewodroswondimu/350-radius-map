@@ -1,41 +1,284 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>350-Mile Radius Map</title>
+  <title>Austin City Guide Map</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
-    #map { height: 100vh; }
+    #map { height: 97vh; margin: 0; }
+    body { margin: 0; font-family: sans-serif; }
+    #controls {
+      padding: 10px;
+      background: white;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 1000;
+      border-radius: 8px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    #controls label { display: block; margin-bottom: 6px; }
+    #warning {
+      padding: 8px;
+      background-color: #ffebee;
+      color: #c62828;
+      border: 1px solid #c62828;
+      border-radius: 4px;
+      font-size: 12px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
-  <div id="map"></div>
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-    // Set your desired coordinates (latitude, longitude)
-    const lat = 30.285146; // UT at Austin
-    const lon = -97.734025;
 
-    const map = L.map('map').setView([lat, lon], 6);
+<div id="controls">
+  <!-- <label><input type="checkbox" id="toggleCompanies"> Tech Companies</label>
+  <label><input type="checkbox" id="toggleComedy"> Comedy Clubs</label>
+  <label><input type="checkbox" id="toggleExplore"> Tourist Attractions</label> -->
+  <label><input type="checkbox" id="toggleShopping"> Shopping</label>
+  <label><input type="checkbox" id="toggleCampusFood"> Campus Dining</label>
+  <label><input type="checkbox" id="toggleCityFood"> Austin Dining</label>
+  <label><input type="checkbox" id="toggleWorship"> Places of Worship</label>
+  <label><input type="checkbox" id="toggleThingsToDo"> Things to Do & See</label>
+  <label><input type="checkbox" id="toggleHealth"> Healthcare Providers </label>
+</div>
+<div id="map"></div>
+<div id="warning">Warning: Locations coordinates are AI-generated from the AUSTIN CITY GUIDE. Please verify addresses on Google Maps before visiting.</div>
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  const map = L.map('map').setView([30.2849, -97.7341], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+  L.circle([30.2849, -97.7341], { color:'blue', fillColor:'#30f', fillOpacity:0.2, radius:350*1609.34 }).addTo(map);
+  L.marker([30.2849, -97.7341]).addTo(map).bindPopup('UT Austin');
 
-    // Add marker for the node
-    L.marker([lat, lon]).addTo(map)
-      .bindPopup('University of Texas at Austin')
-      .openPopup();
+  // marker icon factory
+  const iconBase = "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/";
+  function icon(color) {
+    return new L.Icon({
+      iconUrl: `${iconBase}marker-icon-${color}.png`,
+      shadowUrl: `${iconBase}marker-shadow.png`,
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+  }
 
-    // Add 350-mile radius circle (converted to meters)
-    const radiusInMeters = 350 * 1609.34;
-    L.circle([lat, lon], {
-      color: 'blue',
-      fillColor: '#30f',
-      fillOpacity: 0.2,
-      radius: radiusInMeters
-    }).addTo(map);
-  </script>
+  const colors = {
+    companies: icon("blue"),
+    comedy:    icon("green"),
+    explore:   icon("orange"),
+    shopping:  icon("red"),
+    campusFood:icon("yellow"),
+    cityFood:  icon("gold"),
+    worship:   icon("grey"),
+    thingsToDo:icon("violet"),
+    health:icon("black"),
+  };
+
+  // Tech Companies
+  const techCompanies = [
+    ["Apple Campus",             [30.3939, -97.7483], "https://www.apple.com/retail/domainnorthside/"],
+    ["Google Austin",            [30.2654, -97.7452], "https://www.google.com/about/austin/"],
+    ["Amazon Austin",            [30.2669, -97.7391], "https://www.amazon.jobs/en/locations/austin-texas"],
+    ["Facebook Meta Austin",     [30.2661, -97.7437], "https://about.fb.com/austin/"],
+    ["Tesla Gigafactory Texas",  [30.2212, -97.6044], "https://www.tesla.com/gigafactorytexas"],
+    ["Oracle HQ Austin",         [30.2485, -97.7161], "https://www.oracle.com/austin/"],
+    ["Indeed Tower",             [30.2679, -97.7420], "https://www.indeed.com/"],
+    ["Silicon Labs",             [30.2700, -97.7484], "https://www.silabs.com/"]
+  ].map(([n,c,u])=>L.marker(c,{icon:colors.companies}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`));
+
+  // Comedy Clubs
+  const comedyClubs = [
+    ["Cap City Comedy Club",     [30.4019, -97.7265], "https://capcitycomedy.com"],
+    ["Vulcan Gas Company",       [30.2671, -97.7364], "https://www.vulcanatx.com/"],
+    ["Hyena's Comedy Nightclub", [32.7831, -96.8066], "https://hyenas.com"],
+    ["The Secret Group",         [29.7484, -95.3541], "https://thesecretgroup.com"],
+    ["Rudyard's Comedy Room",    [29.7442, -95.3914], "https://rudyards.com"],
+    ["Addison Improv",           [32.9603, -96.8292], "https://improv.com/addison"],
+    ["Fallout Theater",          [30.2682, -97.7441], "https://fallouttheater.com"],
+    ["The Creek and The Cave",   [30.2673, -97.7316], "https://creekandcave.com"]
+  ].map(([n,c,u])=>L.marker(c,{icon:colors.comedy}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`));
+
+  // Tourist Attractions
+  const exploreSpots = [
+    ["San Antonio River Walk",    [29.4252, -98.4916], "https://visitsanantonio.com/riverwalk"],
+    ["The Alamo",                [29.4259, -98.4861], "https://www.thealamo.org"],
+    ["Big Bend National Park",   [29.1275, -103.2425], "https://www.nps.gov/bibe/"],
+    ["Space Center Houston",     [29.5502, -95.0970], "https://spacecenter.org"],
+    ["Hamilton Pool Preserve",   [30.3420, -98.1277], "https://tpwd.texas.gov/state-parks/hamilton-pool"],
+    ["Enchanted Rock",           [30.5053, -98.8198], "https://tpwd.texas.gov/state-parks/enchanted-rock"],
+    ["Zilker Park",              [30.2669, -97.7725], "https://zilkeroffset.com"],
+    ["Texas State Capitol",      [30.2747, -97.7404], "https://tspb.texas.gov"],
+    ["Barton Springs Pool",      [30.2640, -97.7726], "https://austintexas.gov/department/barton-springs-pool"]
+  ].map(([n,c,u])=>L.marker(c,{icon:colors.explore}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`));
+
+  // Shopping
+  const shopping = [
+    ["H-E-B",                    [30.3053, -97.7067], "https://www.heb.com"],
+    ["Fiesta Mart",              [30.4242, -97.7130], "https://www.fiestamart.com"],
+    ["Fresh Plus",               [30.3827, -97.7147], "https://freshplusaustin.com"],
+    ["Central Market",           [30.3065, -97.7671], "https://www.centralmarket.com"],
+    ["Whole Foods Market",       [30.2711, -97.7536], "https://www.wholefoodsmarket.com"],
+    ["Afghan Halal Market",      [30.2730, -97.7400], "https://newmadinamarket.com"],
+    ["Walmart (Northcross)",     [30.3793, -97.7225], "https://www.walmart.com"],
+    ["Target (Guadalupe)",       [30.2843, -97.7427], "https://www.target.com"],
+    ["Trader Joe’s",             [30.2696, -97.7364], "https://www.traderjoes.com"],
+    ["The Domain",               [30.3570, -97.7225], "https://www.simon.com/mall/the-domain"],
+    ["Round Rock Premium Outlets",[30.5237,-97.6692], "https://www.premiumoutlets.com/outlets/round-rock"],
+    ["Barton Creek Mall",        [30.2084, -97.8930], "https://www.simon.com/mall/barton-creek-square"],
+    ["Lakeline Mall",            [30.4902, -97.8404], "https://www.simon.com/mall/lakeline-mall"],
+    ["CVS Pharmacy",             [30.2686, -97.7421], "https://www.cvs.com"],
+    ["Walgreens",                [30.2964, -97.7405], "https://www.walgreens.com"]
+  ].map(([n,c,u])=>L.marker(c,{icon:colors.shopping}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`));
+
+  // Campus Dining
+  const campusDining = [
+    ['Kerbey Lane Café',[30.2924,-97.7411],'https://kerbeylanecafe.com'],
+    ['Top Notch',[30.3442,-97.7131],'http://topnotchaustin.com'],
+    ['Pluckers Wing Factory',[30.2899,-97.7440],'https://pluckers.com'],
+    ['Raku Sushi & Asian Bistro',[30.2899,-97.7418],'http://rakuaustin.com'],
+    ['Clay Pit (Indian)',[30.2917,-97.7405],'https://claypitaustin.com'],
+    ['Madam Mam’s (Thai)',[30.6500,-97.6950],'https://madammadams.com'],
+    ['Sip Pho (Vietnamese)',[30.6550,-97.6900],'https://sippho.com'],
+    ['Black’s BBQ',[30.4100,-97.8000],'https://blacksbbq.com'],
+    ['Rudy’s BBQ',[30.4220,-97.7000],'https://rudysonline.com'],
+    ['Einstein Brothers Bagels',[30.4080,-97.7200],'https://einsteinbros.com'],
+    ['Starbucks',[30.4030,-97.7250],'https://starbucks.com'],
+    ['In-N-Out',[30.4160,-97.7250],'https://in-n-out.com'],
+    ['Whataburger',[30.4165,-97.7290],'https://whataburger.com'],
+    ['Chick-Fil-A',[30.4168,-97.7400],'https://chick-fil-a.com'],
+    ['Chipotle Mexican Grill',[30.4162,-97.7400],'https://chipotle.com'],
+    ['Cabo Bob’s',[30.4169,-97.7400],'https://cabobobs.com'],
+    ['ThunderCloud Subs',[30.4163,-97.7405],'https://thundercloud.com'],
+    ['PotBelly',[30.4162,-97.7410],'https://potbelly.com'],
+    ['CAVA',[30.4170,-97.7420],'https://cava.com'],
+    ['Halal Bros',[30.4171,-97.7430],'https://halalbros.com'],
+    ['The Pizza Press',[30.4172,-97.7440],'https://thepizzapress.com'],
+    ['Roppolo’s Pizzeria',[30.4173,-97.7450],'https://roppolos.com'],
+    ['Hole in the Wall',[30.4174,-97.7460],''],
+    ['Crown & Anchor',[30.4175,-97.7470],'https://crownandanchor.com'],
+    ['Victory Lap',[30.4176,-97.7480],''],
+    ['Cain & Abel’s',[30.4177,-97.7490],''],
+    ['Insomnia Cookies',[30.4178,-97.7500],'https://insomniacookies.com'],
+    ['Amy’s Ice Cream',[30.4179,-97.7510],'https://amysicecreams.com']
+  ].map(([n,c,u])=>L.marker(c,{icon:colors.campusFood}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`));
+
+  // Austin Dining (city-wide)
+  const cityDining = [
+    ['Sandy’s Hamburgers', [30.2600, -97.7400], 'https://sandysburgers.com'],
+    ['Eureka!', [30.2680, -97.7420], 'https://eurekarestaurantgroup.com'],
+    ['Steamies Dumplings', [30.3000, -97.7200], 'https://steamiesdumplings.com'],
+    ['Coat & Thai Food Truck', [30.3000, -97.7210], ''],
+    ['Loro Asian Smokehouse & Bar', [30.2650, -97.7400], 'https://loroaustin.com'],
+    ['Terry Black’s BBQ', [30.2568, -97.7525], 'https://terryblacksbbq.com'],
+    ['Desnudo Coffee', [30.2800, -97.7200], 'https://desnudocoffee.com'],
+    ['Mozart’s Coffee Roasters', [30.2600, -97.7750], 'https://mozartscoffee.com'],
+    ['Bird Bird Biscuit', [30.2710, -97.7400], 'https://birdbirdbiscuit.com'],
+    ['Raising Cane’s', [30.4160, -97.7420], 'https://raisingcanes.com'],
+    ['Jack in the Box', [30.4000, -97.7100], 'https://jackinthebox.com'],
+    ['De Nada', [30.2600, -97.7200], 'https://denada.com'],
+    ['Taquero Mucho', [30.2600, -97.7190], 'https://taqueromucho.com'],
+    ['Pepe’s Tacos', [30.2600, -97.7180], 'https://pepetacosaustin.com'],
+    ['Asador at Las Perlas', [30.4050, -97.7400], 'https://lasperlasaustin.com'],
+    ['Aster’s Ethiopian Restaurant', [30.2804, -97.7154], 'https://astersethiopia.com'],
+    ['African Market/Nigerian Restaurant', [30.2591, -97.7482], ''],
+    ['Home Slice Pizza', [30.2504, -97.7490], 'https://homeslicepizza.com'],
+    ['Love Supreme Pizza Bar', [30.2710, -97.7340], 'https://lovesupremepizza.com'],
+    ['Mala Vida', [30.2618, -97.7408], 'https://malavidaaustin.com'],
+    ['Bar Peached', [30.2620, -97.7412], 'https://barpeached.com'],
+    ['The White Horse', [30.3155, -97.7229], 'https://thewhitehorseaustin.com'],
+    ['Gordough’s Food Truck', [30.2642, -97.7296], 'https://gordoughs.com'],
+    ['Tiff’s Treats', [30.2852, -97.7490], 'https://tiffstreats.com'],
+    ['Gati Ice Cream', [30.2774, -97.7353], 'https://gatiicecream.com']
+  ].map(([n,c,u])=>L.marker(c,{icon:colors.cityFood}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`));
+
+  // Places of Worship
+  const worship = [
+    ["University Baptist Church",    [30.2890, -97.7410], "http://ubcaustin.org/"],
+    ["Texas Hillel",                 [30.2850, -97.7390], "http://www.texashillel.org/"],
+    ["Nueces Mosque",                [30.2894, -97.7438], "http://www.nuecesmosque.com/"],
+    ["Lutheran Campus Ministries",   [30.2855, -97.7405], "http://www.lcmaustin.org/"],
+    ["University Presbyterian",      [30.2858, -97.7392], "http://upcaustin.org/"],
+    ["University Catholic Center",   [30.2871, -97.7397], "http://www.utcatholic.org/"],
+    ["University United Methodist",  [30.2860, -97.7390], "http://www.uumc.org/"],
+    ["Austin Zen Center",            [30.2920, -97.7420], "http://www.austinzencenter.org/"],
+    ["Austin Hindu Temple",          [30.2010, -97.7430], "http://www.austinhindutemple.org/"],
+    ["First Unitarian Universalist", [30.2660, -97.7510], "http://austinuu.org/"]
+  ].map(([n,c,u])=>L.marker(c,{icon:colors.worship}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`));
+
+  const thingsToDo = [
+    ['360 Outlook', [30.3226,-97.8430], 'https://www.austintexas.org/austin-insider-blog/post/360-bridge/'],
+    ['6th Street', [30.2666,-97.7419], 'http://www.6street.com/'],
+    ['Alamo Drafthouse', [30.2675,-97.7431], 'http://drafthouse.com/'],
+    ['Antone’s Nightclub', [30.2730,-97.7442], 'https://antonesnightclub.com'],
+    ['Austin Central Library', [30.2711,-97.7438], 'https://library.austintexas.gov/central/about'],
+    ['Austin Ghost Tour', [30.2672,-97.7407], 'http://www.austinghosttours.com/'],
+    ['Barton Springs Pool', [30.2640,-97.7726], 'http://austintexas.gov/department/barton-springs-pool'],
+    ['Cheer Up Charlie’s', [30.2592,-97.7385], 'http://cheerupcharlies.com/'],
+    ['Cathedral of Junk', [30.3894,-97.7611], 'http://www.roadsideamerica.com/story/7816'],
+    ['Continental Club', [30.2632,-97.7540], 'https://continentalclub.com/'],
+    ['Deep Eddy Pool', [30.2940,-97.8096], 'https://www.austintexas.gov/department/deep-eddy-pool'],
+    ['Ester’s Follies', [30.2831,-97.7364], 'http://www.esthersfollies.com/'],
+    ['Lady Bird Lake Boardwalk', [30.2715,-97.7578], 'https://www.austincityguide.com/listings/lady-bird-lake-hike-and-bike-trail'],
+    ['Lake Travis Waterloo Adventures', [30.3358,-98.0019], 'https://waterlooadventures.com'],
+    ['Lake Travis Zipline Adventures', [30.3355,-98.0052], 'http://www.ziplaketravis.com/'],
+    ['Maverick Horseback Riding', [30.5592,-98.1234], 'https://maverickhorsebackriding.com/'],
+    ['Museum of Ice Cream', [30.2670,-97.7420], 'https://www.museumoficecream.com/'],
+    ['Museum of the Weird', [30.2690,-97.7405], 'https://www.museumoftheweird.com/'],
+    ['Moody Theater', [30.2684,-97.7431], 'https://acl-live.com/'],
+    ['Mount Bonnell', [30.3225,-97.8144], 'https://mountbonnell.com/'],
+    ['Rainey Street', [30.2644,-97.7403], 'https://www.austintexas.org/things-to-do/entertainment-districts/rainey-street/'],
+    ['South Congress (SoCo)', [30.2530,-97.7476], 'https://www.austintexas.org/austin-insider-blog/post/around-town-south-congress/'],
+    ['The Broken Spoke', [30.2657,-97.7656], 'https://www.brokenspokeaustintx.net/'],
+    ['The Driskill Hotel', [30.2689,-97.7416], 'https://driskillhotel.com/about/'],
+    ['Paramount Theater', [30.2616,-97.7418], 'https://www.austintheatre.org/'],
+    ['Top Golf Austin', [30.4243,-97.7148], 'https://topgolf.com/us/austin/'],
+    ['Water Activities on Town Lake', [30.2621,-97.7458], 'http://www.rowingdock.com'],
+    ['Zilker Botanical Garden', [30.2665,-97.7722], 'https://zilkergarden.org']
+  ].map(([n,c,u])=>L.marker(c,{icon:colors.thingsToDo}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`));
+
+  // Pharmacies
+  const health = [
+    ["H-E-B Pharmacy",               [30.3053,-97.7067], "https://www.heb.com"],
+    ["CVS Pharmacy (2402 Guadalupe)",[30.2686,-97.7421], "https://www.cvs.com"],
+    ["CVS Pharmacy (Inside Target)", [30.2843,-97.7427], "https://www.cvs.com"],
+    ["Walgreens",                    [30.2964,-97.7405], "https://www.walgreens.com"],
+    ["CareNow Urgent Care",          [30.2926,-97.7511], "https://www.carenow.com"],
+    ["Next Level Urgent Care",       [30.2960,-97.7380], "https://nextlevelurgentcare.com"],
+    ["St. David’s Medical Center",   [30.3184,-97.7137], ""],
+    ["Ascension Seton Medical Center",[30.2970,-97.7470], ""],
+    ["Harbor Health – North Central","[30.2890,-97.7420]", "https://harborhealth.org"],
+    ["Capital Medical Clinic LLP",   [30.2895,-97.7425], ""],
+    ["Ascension Seton: Dr. Megan Lyn McCoin",[30.2895,-97.7430], ""],
+    ["Dr. Cindy J. Mingea",                   [30.2730,-97.7670], ""],
+    ["University Health Services",   [30.2925,-97.7435], ""]
+  ].map(([n,c,u])=>L.marker(c,{icon:colors.health}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`));
+
+  // toggle helper
+  function toggle(group, checked){ group.forEach(m=>checked?m.addTo(map):map.removeLayer(m)); }
+  const allGroups = {
+    // toggleCompanies: techCompanies,
+    // toggleComedy:    comedyClubs,
+    // toggleExplore:   exploreSpots,
+    toggleShopping:  shopping,
+    toggleCampusFood:campusDining,
+    toggleCityFood:  cityDining,
+    toggleWorship:   worship,
+    toggleThingsToDo:thingsToDo,
+    toggleHealth:health
+  };
+
+  Object.entries(allGroups).forEach(([id, grp])=>{
+    document.getElementById(id)
+      .addEventListener('change', e => toggle(grp, e.target.checked));
+  });
+</script>
 </body>
 </html>
