@@ -67,7 +67,7 @@
 </div>
 
 <div id="legend">Blue circle: 350-mile radius around UT Austin <br/> (click to view full circle)</div>
-<div id="warning">Warning: Location coordinates are AI-generated from the list of places on the <a href="">AUSTIN CITY GUIDE</a>. Please verify addresses before traveling.</div>
+<div id="warning">Warning: Location coordinates are AI-generated from the list of places on the <a href="https://global.utexas.edu/isss/life-at-ut/austin/food-shopping">AUSTIN CITY GUIDE</a>. Please verify addresses before traveling.</div>
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -321,7 +321,7 @@
     validateCoordinates(n, c);
     return L.marker(c, {icon: colors.health}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`);
   });
-  
+
   // toggle helper
   function toggle(group, checked){ group.forEach(m=>checked?m.addTo(map):map.removeLayer(m)); }
   const allGroups = {
