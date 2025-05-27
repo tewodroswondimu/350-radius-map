@@ -13,7 +13,7 @@
       background: white;
       box-shadow: 0 0 5px rgba(0,0,0,0.2);
       position: absolute;
-      top: 10px;
+      top: 50px;
       right: 10px;
       z-index: 1000;
       border-radius: 8px;
@@ -21,11 +21,31 @@
       overflow-y: auto;
     }
     #controls label { display: block; margin-bottom: 6px; }
-    #warning {
+
+    #legend {
+      margin-top: 10px;
+      position: absolute;
+      top: 120px;
+      left: 10px;
+      width: 150px;
+      z-index: 1000;
       padding: 8px;
-      background-color: #ffebee;
-      color: #c62828;
-      border: 1px solid #c62828;
+      background-color: #e3f2fd;
+      color: #1565c0;
+      border: 1px solid #1565c0;
+      border-radius: 4px;
+      font-size: 12px;
+      text-align: left;
+      cursor: pointer;
+    }
+    #legend:hover {
+      background-color: #bbdefb;
+    }
+    #warning {
+      padding: 10px;
+      background-color: #FFF3CD;
+      color: #856404;
+      border: 1px solid #FFEEBA;
       border-radius: 4px;
       font-size: 12px;
       text-align: center;
@@ -45,8 +65,10 @@
   <label><input type="checkbox" id="toggleThingsToDo"> Things to Do & See</label>
   <label><input type="checkbox" id="toggleHealth"> Healthcare Providers </label>
 </div>
+
+<div id="legend">Blue circle: 350-mile radius around UT Austin <br/> (click to view full circle)</div>
+<div id="warning">Warning: Location coordinates are AI-generated from the list of places on the <a href="">AUSTIN CITY GUIDE</a>. Please verify addresses before traveling.</div>
 <div id="map"></div>
-<div id="warning">Warning: Locations coordinates are AI-generated from the AUSTIN CITY GUIDE. Please verify addresses on Google Maps before visiting.</div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
@@ -57,6 +79,10 @@
   L.circle([30.2849, -97.7341], { color:'blue', fillColor:'#30f', fillOpacity:0.2, radius:350*1609.34 }).addTo(map);
   L.marker([30.2849, -97.7341]).addTo(map).bindPopup('UT Austin');
 
+  // Legend click event to zoom out and show full 350-mile radius
+  document.getElementById('legend').addEventListener('click', () => {
+    map.setView([30.2849, -97.7341], 5); // Zoom level 5 to show ~700-mile diameter
+  });
   // marker icon factory
   const iconBase = "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/";
   function icon(color) {
@@ -64,8 +90,8 @@
       iconUrl: `${iconBase}marker-icon-${color}.png`,
       shadowUrl: `${iconBase}marker-shadow.png`,
       iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
+      iconAnchor: [12, 41], // Anchor at base of marker
+      popupAnchor: [0, -41], // Popup above marker
       shadowSize: [41, 41]
     });
   }
@@ -82,6 +108,15 @@
     health:icon("black"),
   };
 
+  // Validate coordinates helper
+  function validateCoordinates(name, coords) {
+    if (!coords || coords.length !== 2 || isNaN(coords[0]) || isNaN(coords[1])) {
+      console.warn(`Invalid coordinates for ${name}: ${coords}`);
+    } else if (coords[0] < 20 || coords[0] > 40 || coords[1] < -110 || coords[1] > -85) {
+      console.warn(`Coordinates out of bounds for ${name}: ${coords}`);
+    }
+  }
+
   // Tech Companies
   const techCompanies = [
     ["Apple Campus",             [30.3939, -97.7483], "https://www.apple.com/retail/domainnorthside/"],
@@ -92,7 +127,10 @@
     ["Oracle HQ Austin",         [30.2485, -97.7161], "https://www.oracle.com/austin/"],
     ["Indeed Tower",             [30.2679, -97.7420], "https://www.indeed.com/"],
     ["Silicon Labs",             [30.2700, -97.7484], "https://www.silabs.com/"]
-  ].map(([n,c,u])=>L.marker(c,{icon:colors.companies}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`));
+  ].map(([n,c,u]) => {
+    validateCoordinates(n, c);
+    return L.marker(c, {icon: colors.companies}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`);
+  });
 
   // Comedy Clubs
   const comedyClubs = [
@@ -104,7 +142,10 @@
     ["Addison Improv",           [32.9603, -96.8292], "https://improv.com/addison"],
     ["Fallout Theater",          [30.2682, -97.7441], "https://fallouttheater.com"],
     ["The Creek and The Cave",   [30.2673, -97.7316], "https://creekandcave.com"]
-  ].map(([n,c,u])=>L.marker(c,{icon:colors.comedy}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`));
+  ].map(([n,c,u]) => {
+    validateCoordinates(n, c);
+    return L.marker(c, {icon: colors.comedy}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`);
+  });
 
   // Tourist Attractions
   const exploreSpots = [
@@ -117,7 +158,10 @@
     ["Zilker Park",              [30.2669, -97.7725], "https://zilkeroffset.com"],
     ["Texas State Capitol",      [30.2747, -97.7404], "https://tspb.texas.gov"],
     ["Barton Springs Pool",      [30.2640, -97.7726], "https://austintexas.gov/department/barton-springs-pool"]
-  ].map(([n,c,u])=>L.marker(c,{icon:colors.explore}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`));
+  ].map(([n,c,u]) => {
+    validateCoordinates(n, c);
+    return L.marker(c, {icon: colors.explore}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`);
+  });
 
   // Shopping
   const shopping = [
@@ -136,7 +180,10 @@
     ["Lakeline Mall",            [30.4902, -97.8404], "https://www.simon.com/mall/lakeline-mall"],
     ["CVS Pharmacy",             [30.2686, -97.7421], "https://www.cvs.com"],
     ["Walgreens",                [30.2964, -97.7405], "https://www.walgreens.com"]
-  ].map(([n,c,u])=>L.marker(c,{icon:colors.shopping}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`));
+  ].map(([n,c,u]) => {
+    validateCoordinates(n, c);
+    return L.marker(c, {icon: colors.shopping}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`);
+  });
 
   // Campus Dining
   const campusDining = [
@@ -168,7 +215,10 @@
     ['Cain & Abel’s',[30.4177,-97.7490],''],
     ['Insomnia Cookies',[30.4178,-97.7500],'https://insomniacookies.com'],
     ['Amy’s Ice Cream',[30.4179,-97.7510],'https://amysicecreams.com']
-  ].map(([n,c,u])=>L.marker(c,{icon:colors.campusFood}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`));
+  ].map(([n,c,u]) => {
+    validateCoordinates(n, c);
+    return L.marker(c, {icon: colors.campusFood}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`);
+  });
 
   // Austin Dining (city-wide)
   const cityDining = [
@@ -197,7 +247,10 @@
     ['Gordough’s Food Truck', [30.2642, -97.7296], 'https://gordoughs.com'],
     ['Tiff’s Treats', [30.2852, -97.7490], 'https://tiffstreats.com'],
     ['Gati Ice Cream', [30.2774, -97.7353], 'https://gatiicecream.com']
-  ].map(([n,c,u])=>L.marker(c,{icon:colors.cityFood}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`));
+  ].map(([n,c,u]) => {
+    validateCoordinates(n, c);
+    return L.marker(c, {icon: colors.cityFood}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`);
+  });
 
   // Places of Worship
   const worship = [
@@ -211,7 +264,10 @@
     ["Austin Zen Center",            [30.2920, -97.7420], "http://www.austinzencenter.org/"],
     ["Austin Hindu Temple",          [30.2010, -97.7430], "http://www.austinhindutemple.org/"],
     ["First Unitarian Universalist", [30.2660, -97.7510], "http://austinuu.org/"]
-  ].map(([n,c,u])=>L.marker(c,{icon:colors.worship}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`));
+  ].map(([n,c,u]) => {
+    validateCoordinates(n, c);
+    return L.marker(c, {icon: colors.worship}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`);
+  });
 
   const thingsToDo = [
     ['360 Outlook', [30.3226,-97.8430], 'https://www.austintexas.org/austin-insider-blog/post/360-bridge/'],
@@ -242,8 +298,10 @@
     ['Top Golf Austin', [30.4243,-97.7148], 'https://topgolf.com/us/austin/'],
     ['Water Activities on Town Lake', [30.2621,-97.7458], 'http://www.rowingdock.com'],
     ['Zilker Botanical Garden', [30.2665,-97.7722], 'https://zilkergarden.org']
-  ].map(([n,c,u])=>L.marker(c,{icon:colors.thingsToDo}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`));
-
+  ].map(([n,c,u]) => {
+    validateCoordinates(n, c);
+    return L.marker(c, {icon: colors.thingsToDo}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`);
+  });
   // Pharmacies
   const health = [
     ["H-E-B Pharmacy",               [30.3053,-97.7067], "https://www.heb.com"],
@@ -259,8 +317,11 @@
     ["Ascension Seton: Dr. Megan Lyn McCoin",[30.2895,-97.7430], ""],
     ["Dr. Cindy J. Mingea",                   [30.2730,-97.7670], ""],
     ["University Health Services",   [30.2925,-97.7435], ""]
-  ].map(([n,c,u])=>L.marker(c,{icon:colors.health}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`));
-
+  ].map(([n,c,u]) => {
+    validateCoordinates(n, c);
+    return L.marker(c, {icon: colors.health}).bindPopup(`<b>${n}</b><br><a href="${u}" target="_blank">Website</a>`);
+  });
+  
   // toggle helper
   function toggle(group, checked){ group.forEach(m=>checked?m.addTo(map):map.removeLayer(m)); }
   const allGroups = {
